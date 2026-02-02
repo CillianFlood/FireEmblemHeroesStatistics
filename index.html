@@ -1,96 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>My Sheets‑Backed Site</title>
-  <style>
-    :root {
-      --bg: #0f1220;
-      --panel: #161a2f;
-      --text: #e7e9ff;
-      --muted: #aab0ff;
-      --accent: #7c7cff;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu;
-      background: linear-gradient(180deg, #0b0e1a, var(--bg)); color: var(--text);
-    }
-    header { padding: 1.25rem 1rem; border-bottom: 1px solid #232766; }
-    h1 { margin: 0; font-size: 1.4rem; }
-    main { max-width: 980px; margin: 0 auto; padding: 1rem; }
-    .toolbar { display: flex; gap: .5rem; margin-bottom: .75rem; }
-    input {
-      flex: 1; padding: .6rem .7rem; border-radius: 10px; border: 1px solid #2a2f7a;
-      background: var(--panel); color: var(--text);
-    }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .75rem; }
-    .card {
-      background: radial-gradient(120% 120% at 0% 0%, #1b2050, var(--panel));
-      border: 1px solid #2a2f7a; border-radius: 14px; padding: .8rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    }
-    .name { font-weight: 700; margin-bottom: .25rem; }
-    .meta { color: var(--muted); font-size: .85rem; }
-    footer { opacity: .7; text-align: center; padding: 1.5rem 0; }
-    a { color: var(--accent); text-decoration: none; }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>My Google‑Sheets‑Backed Website</h1>
-  </header>
-
-  <main>
-    <div class="toolbar">
-      <input id="search" placeholder="Search…" />
-    </div>
-    <div id="grid" class="grid"></div>
-  </main>
-
-  <footer>
-    Hosted free on GitHub Pages · Data from Google Sheets
-  </footer>
-
-  <script>
-    // TODO: Replace this with your Apps Script Web App URL
-    const API_URL = "https://script.google.com/macros/s/AKfycby2I5vu_WFwAD_Kd-gHyIvKPJNyNtTQlv-Ocy0CJABAiKu-MGQGqVhj-t5NItagF2_MHw/exec";
-
-    const grid = document.getElementById('grid');
-    const search = document.getElementById('search');
-    let rows = [];
-
-    function render(filter = "") {
-      grid.innerHTML = "";
-      const f = filter.toLowerCase();
-      rows
-        .filter(r => !f || String(r[0]).toLowerCase().includes(f))
-        .forEach(r => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <div class="name">${r[0]}</div>
-            <div class="meta">${r.slice(1).join(' · ')}</div>
-          `;
-          grid.appendChild(card);
-        });
-    }
-
-fetch(API_URL + "?endpoint=characters")
-  .then(r => r.json())
-  .then(data => {
-    // Convert simple list into rows the UI understands
-    rows = data.map(name => [name]);
-    render();
-  })
-  .catch(err => {
-    grid.innerHTML = '<div class="card">Failed to load data.</div>';
-    console.error(err);
-  });
-
-
-    search.addEventListener('input', e => render(e.target.value));
-  </script>
-</body>
-</html>
+<script>
+  fetch("PASTE_YOUR_SCRIPT_URL_HERE?endpoint=characters")
+    .then(r => r.text())
+    .then(t => {
+      document.getElementById("grid").innerHTML =
+        "<div class='card'><pre>" + t + "</pre></div>";
+    })
+    .catch(e => {
+      document.getElementById("grid").innerHTML =
+        "<div class='card'>ERROR: " + e + "</div>";
+    });
+</script>
