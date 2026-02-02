@@ -77,16 +77,18 @@
         });
     }
 
-    fetch(API_URL)
-      .then(r => r.json())
-      .then(data => {
-        rows = data.slice(1); // skip header row
-        render();
-      })
-      .catch(err => {
-        grid.innerHTML = '<div class="card">Failed to load data.</div>';
-        console.error(err);
-      });
+fetch(API_URL + "?endpoint=characters")
+  .then(r => r.json())
+  .then(data => {
+    // Convert simple list into rows the UI understands
+    rows = data.map(name => [name]);
+    render();
+  })
+  .catch(err => {
+    grid.innerHTML = '<div class="card">Failed to load data.</div>';
+    console.error(err);
+  });
+
 
     search.addEventListener('input', e => render(e.target.value));
   </script>
