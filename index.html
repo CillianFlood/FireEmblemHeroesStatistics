@@ -87,6 +87,38 @@ function render(filter = "") {
     });
 }
 
+function doGet(e) {
+  if (!e.parameter.endpoint) {
+    return json({ error: "No endpoint specified" });
+  }
+
+  if (e.parameter.endpoint === "allgames") {
+    return getAllGames();
+  }
+
+  return json({ error: "Unknown endpoint" });
+}
+
+function getAllGames() {
+  const ss = SpreadsheetApp.getActive();
+  const sheet = ss.getSheetByName("CYLData"); // confirm name
+  const range = sheet.getRange("AllGames");         // named range
+
+  const values = range.getValues();
+
+  return json({
+    headers: values[0],
+    rows: values.slice(1)
+  });
+}
+
+function json(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+    
 console.log(headers);
 console.log(rows.slice(0, 5));
 
