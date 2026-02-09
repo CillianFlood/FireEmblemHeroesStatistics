@@ -86,7 +86,7 @@ function render(filter = "") {
     });
 }
 
-fetch(API_URL + "?endpoint=allgames")
+fetch(API_URL + "?endpoint=forwebsite")
   .then(r => r.json())
   .then(data => {
     headers = data.headers;
