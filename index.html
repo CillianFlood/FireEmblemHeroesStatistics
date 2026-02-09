@@ -71,6 +71,11 @@
           card.className = 'card';
           card.innerHTML = `
             <div class="name">${r[0]}</div>
+            <div class="meta">
+              ${headers.slice(1).map((h, i) =>
+                `<div><strong>${h}:</strong> ${r[i + 1]}</div>`
+              ).join("")}
+            </div>
           `;
           grid.appendChild(card);
         });
