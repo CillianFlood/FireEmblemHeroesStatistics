@@ -93,11 +93,13 @@ console.log(rows.slice(0, 5));
 fetch(API_URL + "?endpoint=characters")
   .then(r => r.json())
   .then(data => {
-    headers = data[0];
-    rows = data.slice(1);
+    console.log("RAW RESPONSE:", data);
+
+    headers = data.headers;
+    rows = data.rows;
+
     render();
   })
-
   .catch(err => {
     console.error(err);
   });
