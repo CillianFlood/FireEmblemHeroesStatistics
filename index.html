@@ -70,12 +70,12 @@
       grid.innerHTML = "";
       const f = filter.toLowerCase();
       rows
-        .filter(r => !f || String(r[0]).toLowerCase().includes(f))
+        .filter(r =>r[1]?.toString().toLowerCase().includes(search.value.toLowerCase()))
         .forEach(r => {
           const card = document.createElement('div');
           card.className = 'card';
           card.innerHTML = `
-            <div class="name">${r[0]}</div>
+            <div class="name">${r[1]}</div>
             <div class="meta">
               ${headers.slice(1).map((h, i) =>
                 `<div><strong>${h}:</strong> ${r[i + 1]}</div>`
