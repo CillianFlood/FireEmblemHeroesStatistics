@@ -79,7 +79,8 @@
 fetch(API_URL + "?endpoint=characters")
   .then(r => r.json())
   .then(data => {
-    rows = data.map(name => [name]);
+    const headers = data[0];
+    rows = data.slice(1);
     render();
   })
   .catch(err => {
