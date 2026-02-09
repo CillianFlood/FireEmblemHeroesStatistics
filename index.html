@@ -53,23 +53,21 @@
     Hosted free on GitHub Pages · Data from Google Sheets
   </footer>
 
-  <script>
-    // TODO: Replace this with your Apps Script Web App URL
-    const API_URL = "https://script.google.com/macros/s/AKfycby2I5vu_WFwAD_Kd-gHyIvKPJNyNtTQlv-Ocy0CJABAiKu-MGQGqVhj-t5NItagF2_MHw/exec";
+ <script>
+const API_URL = "https://script.google.com/macros/s/AKfycby2I5vu_WFwAD_Kd-gHyIvKPJNyNtTQlv-Ocy0CJABAiKu-MGQGqVhj-t5NItagF2_MHw/exec";
 
-    const grid = document.getElementById('grid');
-    const search = document.getElementById('search');
-    let rows = [];
-    let headers = [];
+const grid = document.getElementById('grid');
+const search = document.getElementById('search');
+
+let headers = [];
+let rows = [];
 
 function render(filter = "") {
   grid.innerHTML = "";
   const f = filter.toLowerCase();
 
   rows
-    .filter(r =>
-      r[1]?.toString().toLowerCase().includes(f)
-    )
+    .filter(r => r[1]?.toString().toLowerCase().includes(f)) // Name column
     .forEach(r => {
       const card = document.createElement('div');
       card.className = 'card';
@@ -77,8 +75,8 @@ function render(filter = "") {
       card.innerHTML = `
         <div class="name">${r[1]}</div>
         <div class="meta">
-          ${headers.slice(2).map((h, i) =>
-            `<div><strong>${h}:</strong> ${r[i + 2]}</div>`
+          ${headers.map((h, i) =>
+            `<div><strong>${h}:</strong> ${r[i]}</div>`
           ).join("")}
         </div>
       `;
@@ -87,56 +85,19 @@ function render(filter = "") {
     });
 }
 
-function doGet(e) {
-  if (!e.parameter.endpoint) {
-    return json({ error: "No endpoint specified" });
-  }
-
-  if (e.parameter.endpoint === "allgames") {
-    return getAllGames();
-  }
-
-  return json({ error: "Unknown endpoint" });
-}
-
-function getAllGames() {
-  const ss = SpreadsheetApp.getActive();
-  const sheet = ss.getSheetByName("CYLData"); // confirm name
-  const range = sheet.getRange("AllGames");         // named range
-
-  const values = range.getValues();
-
-  return json({
-    headers: values[0],
-    rows: values.slice(1)
-  });
-}
-
-function json(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-    
-console.log(headers);
-console.log(rows.slice(0, 5));
-
-fetch(API_URL + "?endpoint=characters")
+fetch(API_URL + "?endpoint=allgames")
   .then(r => r.json())
   .then(data => {
-    console.log("RAW RESPONSE TYPE:", typeof data);
-    console.log("RAW RESPONSE:", data);
-
-    // TEMP: do NOT call render yet
+    headers = data.headers;
+    rows = data.rows;
+    render();
   })
   .catch(err => {
-    console.error("FETCH ERROR:", err);
+    console.error("FETCH FAILED:", err);
   });
 
+search.addEventListener('input', e => render(e.target.value));
+</script>
 
-
-    //search.addEventListener('input', e => render(e.target.value));
-  </script>
 </body>
 </html>
