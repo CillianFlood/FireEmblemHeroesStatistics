@@ -93,19 +93,18 @@ console.log(rows.slice(0, 5));
 fetch(API_URL + "?endpoint=characters")
   .then(r => r.json())
   .then(data => {
+    console.log("RAW RESPONSE TYPE:", typeof data);
     console.log("RAW RESPONSE:", data);
 
-    headers = data.headers;
-    rows = data.rows;
-
-    render();
+    // TEMP: do NOT call render yet
   })
   .catch(err => {
-    console.error(err);
+    console.error("FETCH ERROR:", err);
   });
 
 
-    search.addEventListener('input', e => render(e.target.value));
+
+    //search.addEventListener('input', e => render(e.target.value));
   </script>
 </body>
 </html>
