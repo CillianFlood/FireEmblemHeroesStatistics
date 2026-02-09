@@ -60,31 +60,38 @@
     const grid = document.getElementById('grid');
     const search = document.getElementById('search');
     let rows = [];
+    let headers = [];
 
     function transpose(matrix) {
       return matrix[0].map((_, i) => matrix.map(row => row[i]));
     }
 
+function render(filter = "") {
+  grid.innerHTML = "";
+  const f = filter.toLowerCase();
+
+  rows
+    .filter(r =>
+      r[1]?.toString().toLowerCase().includes(f)
+    )
+    .forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      card.innerHTML = `
+        <div class="name">${r[1]}</div>
+        <div class="meta">
+          ${headers.slice(2).map((h, i) =>
+            `<div><strong>${h}:</strong> ${r[i + 2]}</div>`
+          ).join("")}
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+}
     
-    function render(filter = "") {
-      grid.innerHTML = "";
-      const f = filter.toLowerCase();
-      rows
-        .filter(r =>r[1]?.toString().toLowerCase().includes(search.value.toLowerCase()))
-        .forEach(r => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <div class="name">${r[1]}</div>
-            <div class="meta">
-              ${headers.slice(1).map((h, i) =>
-                `<div><strong>${h}:</strong> ${r[i + 1]}</div>`
-              ).join("")}
-            </div>
-          `;
-          grid.appendChild(card);
-        });
-    }
+
 
 fetch(API_URL + "?endpoint=characters")
   .then(r => r.json())
