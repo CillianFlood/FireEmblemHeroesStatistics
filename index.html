@@ -68,23 +68,22 @@ function render(filter = "") {
   const f = filter.toLowerCase();
 
   rows
-    .filter(r => r[1]?.toString().toLowerCase().includes(f)) // Name column
+    .filter(r => r[1] && r[1].toString().toLowerCase().includes(f))
     .forEach(r => {
       const card = document.createElement('div');
       card.className = 'card';
 
       card.innerHTML = `
         <div class="name">${r[1]}</div>
-        <div class="meta">
-          ${headers.map((h, i) =>
-            `<div><strong>${h}:</strong> ${r[i]}</div>`
-          ).join("")}
-        </div>
+        <pre style="white-space: pre-wrap; font-size: 12px;">
+${JSON.stringify(r, null, 2)}
+        </pre>
       `;
 
       grid.appendChild(card);
     });
 }
+
 
 fetch(API_URL + "?endpoint=forwebsite")
   .then(r => r.json())
