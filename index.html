@@ -95,6 +95,9 @@ const search = document.getElementById('search');
 let headers = [];
 let rows = [];
 
+let sortColumn = null;
+let sortAsc = true;
+
 const tableHead = document.querySelector("#dataTable thead");
 const tableBody = document.querySelector("#dataTable tbody");
 
@@ -106,12 +109,25 @@ function render(filter = "") {
 
   // Build header row
   const headerRow = document.createElement("tr");
-  headers.forEach(h => {
-    const th = document.createElement("th");
-    th.textContent = h;
-    headerRow.appendChild(th);
+  headers.forEach((h, index) => {
+  const th = document.createElement("th");
+  th.textContent = h;
+  th.style.cursor = "pointer";
+
+  th.addEventListener("click", () => {
+    if (sortColumn === index) {
+      sortAsc = !sortAsc;
+    } else {
+      sortColumn = index;
+      sortAsc = true;
+    }
+
+    sortRows();
+    render(search.value);
   });
-  tableHead.appendChild(headerRow);
+
+  headerRow.appendChild(th);
+});
 
   // Find useful column indexes
   const characterIndex = headers.indexOf("Character");
@@ -153,6 +169,31 @@ function render(filter = "") {
     });
 }
 
+function sortRows() {
+  if (sortColumn === null) return;
+
+  rows.sort((a, b) => {
+    let valA = a[sortColumn];
+    let valB = b[sortColumn];
+
+    // Convert numeric values properly
+    const numA = parseFloat(valA);
+    const numB = parseFloat(valB);
+
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return sortAsc ? numA - numB : numB - numA;
+    }
+
+    // Otherwise string compare
+    valA = valA ? valA.toString().toLowerCase() : "";
+    valB = valB ? valB.toString().toLowerCase() : "";
+
+    if (valA < valB) return sortAsc ? -1 : 1;
+    if (valA > valB) return sortAsc ? 1 : -1;
+    return 0;
+  });
+}
+   
 fetch(API_URL + "?endpoint=forwebsite")
   .then(r => r.json())
   .then(data => {
