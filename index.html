@@ -107,8 +107,6 @@ let sortAsc = true;
 const tableHead = document.querySelector("#dataTable thead");
 const tableBody = document.querySelector("#dataTable tbody");
 
-const allegianceIndex = headers.indexOf("Header Allegiance");
-
 const checkboxes = document.querySelectorAll("#filters input");
 
 checkboxes.forEach(cb => {
@@ -149,7 +147,8 @@ function renderTable(selectedAllegiances = ["Player", "Enemy", "Ally"]) {
     sortRows();
     render(search.value);
   });
-
+  
+  const allegianceIndex = headers.indexOf("Header Allegiance");
   headerRow.appendChild(th);
 });
 tableHead.appendChild(headerRow);
@@ -158,17 +157,24 @@ tableHead.appendChild(headerRow);
   const mugIndex = headers.indexOf("Mug");
   const moveTypeIndex = headers.indexOf("Move Type");
 
-if (!selectedAllegiances.includes(row[allegianceIndex])) {
-  return;
-}
+ 
    
   rows
-    .filter(r =>
-      !filter ||
-      (characterIndex !== -1 &&
-        r[characterIndex] &&
-        r[characterIndex].toString().toLowerCase().includes(f))
-    )
+  .filter(r => {
+    // Allegiance filter
+    if (!selectedAllegiances.includes(r[allegianceIndex])) {
+      return false;
+    }
+
+    // Search filter
+    if (!filter) return true;
+
+    return (
+      characterIndex !== -1 &&
+      r[characterIndex] &&
+      r[characterIndex].toString().toLowerCase().includes(f)
+    );
+  })
     .forEach(r => {
       const tr = document.createElement("tr");
 
