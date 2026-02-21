@@ -1,3 +1,12 @@
+<div class="toolbar">
+  <input id="search" type="text" placeholder="Search by character name..." />
+</div>
+
+<table id="dataTable">
+  <thead></thead>
+  <tbody></tbody>
+</table>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -29,9 +38,6 @@ function applyFilters() {
   renderTable(selected);
 }
 
-<div class="toolbar">
-<input id="search" type="text" placeholder="Search by character name..." />
-</div>
 /* RENDER */
 
 function renderTable(selectedAllegiances = ["Player","Enemy","Ally"]) {
