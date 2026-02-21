@@ -1,4 +1,6 @@
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 const API_URL = "https://script.google.com/macros/s/AKfycby2SIa1xkldeimH7OrkltvK9BoPE07PELtGEriB5gPZ8GSzu42ErrvZo3M73S5k8aBycg/exec";
 
 const search = document.getElementById("search");
@@ -11,9 +13,7 @@ let rows = [];
 let sortColumn = null;
 let sortAsc = true;
 
-/* ============================= */
-/* FILTER HANDLING */
-/* ============================= */
+/* FILTERS */
 
 checkboxes.forEach(cb => {
   cb.addEventListener("change", applyFilters);
@@ -29,9 +29,7 @@ function applyFilters() {
   renderTable(selected);
 }
 
-/* ============================= */
-/* RENDER TABLE */
-/* ============================= */
+/* RENDER */
 
 function renderTable(selectedAllegiances = ["Player","Enemy","Ally"]) {
 
@@ -45,8 +43,6 @@ function renderTable(selectedAllegiances = ["Player","Enemy","Ally"]) {
   const characterIndex = headers.indexOf("Character");
   const mugIndex = headers.indexOf("Mug");
   const moveTypeIndex = headers.indexOf("Move Type");
-
-  /* ---------- HEADERS ---------- */
 
   const headerRow = document.createElement("tr");
 
@@ -74,18 +70,13 @@ function renderTable(selectedAllegiances = ["Player","Enemy","Ally"]) {
 
   tableHead.appendChild(headerRow);
 
-  /* ---------- ROWS ---------- */
-
   rows
     .filter(r => {
-
-      // Allegiance filter
       if (allegianceIndex !== -1 &&
           !selectedAllegiances.includes(r[allegianceIndex])) {
         return false;
       }
 
-      // Search filter
       if (!filter) return true;
 
       return (
@@ -132,9 +123,7 @@ function renderTable(selectedAllegiances = ["Player","Enemy","Ally"]) {
     });
 }
 
-/* ============================= */
 /* SORTING */
-/* ============================= */
 
 function sortRows() {
   if (sortColumn === null) return;
@@ -160,16 +149,16 @@ function sortRows() {
   });
 }
 
-/* ============================= */
-/* FETCH DATA */
-/* ============================= */
+/* FETCH */
 
 fetch(API_URL + "?endpoint=forwebsite")
   .then(r => r.json())
   .then(data => {
     headers = data.headers;
     rows = data.rows;
-    applyFilters(); // render with filters active
+    applyFilters();
   })
   .catch(err => console.error("FETCH FAILED:", err));
+
+});
 </script>
