@@ -41,7 +41,7 @@ function renderTable(selectedAllegiances = ["Player","Enemy","Ally"]) {
   tableHead.innerHTML = "";
   tableBody.innerHTML = "";
 
-  const allegianceIndex = headers.indexOf("Header Allegiance");
+  const allegianceIndex = headers.indexOf("Allegiance");
   const characterIndex = headers.indexOf("Character");
   const mugIndex = headers.indexOf("Mug");
   const moveTypeIndex = headers.indexOf("Move Type");
@@ -54,7 +54,7 @@ function renderTable(selectedAllegiances = ["Player","Enemy","Ally"]) {
     const th = document.createElement("th");
     th.textContent = h;
 
-    if (h !== "Header Allegiance") {
+    if (h !== "Allegiance") {
       th.style.cursor = "pointer";
       th.addEventListener("click", () => {
         if (sortColumn === index) {
