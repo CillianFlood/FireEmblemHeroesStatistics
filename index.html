@@ -1,117 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>My Sheets‑Backed Site</title>
-  <style>
-    :root {
-      --bg: #0f1220;
-      --panel: #161a2f;
-      --text: #e7e9ff;
-      --muted: #aab0ff;
-      --accent: #7c7cff;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu;
-      background: linear-gradient(180deg, #0b0e1a, var(--bg)); color: var(--text);
-    }
-    header { padding: 1.25rem 1rem; border-bottom: 1px solid #232766; }
-    h1 { margin: 0; font-size: 1.4rem; }
-    main { max-width: 1680px; margin: 0 auto; padding: 1rem; }
-    .toolbar { display: flex; gap: .5rem; margin-bottom: .75rem; }
-    input {
-      flex: 1; padding: .6rem .7rem; border-radius: 10px; border: 1px solid #2a2f7a;
-      background: var(--panel); color: var(--text);
-    }
-    table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--panel);
-  font-size: 14px;
-}
-
-thead {
-  background: #1b2050;
-  position: sticky;
-  top: 0;
-}
-
-th, td {
-  border: 1px solid #2a2f7a;
-  padding: 6px 8px;
-  text-align: center;
-}
-
-th {
-  font-weight: 700;
-  color: var(--accent);
-}
-
-td:first-child,
-th:first-child {
-  text-align: left;
-}
-
-img.mug {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-  border-radius: 6px;
-}
-    .name { font-weight: 700; margin-bottom: .25rem; }
-    .meta { color: var(--muted); font-size: .85rem; }
-    footer { opacity: .7; text-align: center; padding: 1.5rem 0; }
-    a { color: var(--accent); text-decoration: none; }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Choose Your Legends Data</h1>
-  </header>
-
-  <div id="filters">
-  <label><input type="checkbox" value="Player" checked> Player</label>
-  <label><input type="checkbox" value="Enemy" checked> Enemy</label>
-  <label><input type="checkbox" value="Ally" checked> Ally</label>
-  </div>
-  
-  <main>
-    <div class="toolbar">
-      <input id="search" placeholder="Search…" />
-    </div>
-    <div style="overflow-x:auto;">
-      <table id="dataTable">
-        <thead></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </main>
-
-  <footer>
-    Hosted free on GitHub Pages · Data from Google Sheets
-  </footer>
-
- <script>
+<script>
 const API_URL = "https://script.google.com/macros/s/AKfycby2SIa1xkldeimH7OrkltvK9BoPE07PELtGEriB5gPZ8GSzu42ErrvZo3M73S5k8aBycg/exec";
 
-const search = document.getElementById('search');
+const search = document.getElementById("search");
+const tableHead = document.querySelector("#dataTable thead");
+const tableBody = document.querySelector("#dataTable tbody");
+const checkboxes = document.querySelectorAll("#filters input");
 
 let headers = [];
 let rows = [];
-
 let sortColumn = null;
 let sortAsc = true;
 
-const tableHead = document.querySelector("#dataTable thead");
-const tableBody = document.querySelector("#dataTable tbody");
-
-const checkboxes = document.querySelectorAll("#filters input");
+/* ============================= */
+/* FILTER HANDLING */
+/* ============================= */
 
 checkboxes.forEach(cb => {
   cb.addEventListener("change", applyFilters);
 });
+
+search.addEventListener("input", applyFilters);
 
 function applyFilters() {
   const selected = Array.from(checkboxes)
@@ -120,88 +28,101 @@ function applyFilters() {
 
   renderTable(selected);
 }
-   
-function renderTable(selectedAllegiances = ["Player", "Enemy", "Ally"]) {
+
+/* ============================= */
+/* RENDER TABLE */
+/* ============================= */
+
+function renderTable(selectedAllegiances = ["Player","Enemy","Ally"]) {
+
+  const filter = search.value || "";
   const f = filter.toLowerCase();
 
   tableHead.innerHTML = "";
   tableBody.innerHTML = "";
 
-  // Build header row
-  const headerRow = document.createElement("tr");
-  headers.forEach((h, index) => {
-  const th = document.createElement("th");
-  th.textContent = h;
-  th.style.cursor = "pointer";
-
-   if (headers[i] !== "Allegiance") {
-      th.addEventListener("click", () => {
-      if (sortColumn === index) {
-        sortAsc = !sortAsc;
-      } else {
-        sortColumn = index;
-        sortAsc = true;
-      }
-    }
-
-    sortRows();
-    render(search.value);
-  });
-  
   const allegianceIndex = headers.indexOf("Header Allegiance");
-  headerRow.appendChild(th);
-});
-tableHead.appendChild(headerRow);
-  // Find useful column indexes
   const characterIndex = headers.indexOf("Character");
   const mugIndex = headers.indexOf("Mug");
   const moveTypeIndex = headers.indexOf("Move Type");
 
- 
-   
-  rows
-  .filter(r => {
-    // Allegiance filter
-    if (!selectedAllegiances.includes(r[allegianceIndex])) {
-      return false;
+  /* ---------- HEADERS ---------- */
+
+  const headerRow = document.createElement("tr");
+
+  headers.forEach((h, index) => {
+    const th = document.createElement("th");
+    th.textContent = h;
+
+    if (h !== "Header Allegiance") {
+      th.style.cursor = "pointer";
+      th.addEventListener("click", () => {
+        if (sortColumn === index) {
+          sortAsc = !sortAsc;
+        } else {
+          sortColumn = index;
+          sortAsc = true;
+        }
+
+        sortRows();
+        applyFilters();
+      });
     }
 
-    // Search filter
-    if (!filter) return true;
+    headerRow.appendChild(th);
+  });
 
-    return (
-      characterIndex !== -1 &&
-      r[characterIndex] &&
-      r[characterIndex].toString().toLowerCase().includes(f)
-    );
-  })
+  tableHead.appendChild(headerRow);
+
+  /* ---------- ROWS ---------- */
+
+  rows
+    .filter(r => {
+
+      // Allegiance filter
+      if (allegianceIndex !== -1 &&
+          !selectedAllegiances.includes(r[allegianceIndex])) {
+        return false;
+      }
+
+      // Search filter
+      if (!filter) return true;
+
+      return (
+        characterIndex !== -1 &&
+        r[characterIndex] &&
+        r[characterIndex].toString().toLowerCase().includes(f)
+      );
+    })
     .forEach(r => {
+
       const tr = document.createElement("tr");
 
       r.forEach((cell, i) => {
         const td = document.createElement("td");
 
-        // If this is the Mug column, render as image
         if (i === mugIndex && cell) {
           const img = document.createElement("img");
           img.src = cell;
           img.className = "mug";
           td.appendChild(img);
-        } 
+        }
         else if (i === moveTypeIndex && cell) {
           const img = document.createElement("img");
           img.src = cell;
           img.className = "moveType";
           td.appendChild(img);
-        } 
+        }
         else {
           if (!isNaN(cell) && cell !== "") {
-            td.textContent = Number(cell).toLocaleString(undefined, {
+            td.textContent = Number(
+              cell.toString().replace(/,/g,"")
+            ).toLocaleString(undefined, {
               maximumFractionDigits: 2
             });
           } else {
             td.textContent = cell;
-}
+          }
         }
 
         tr.appendChild(td);
@@ -211,17 +132,18 @@ tableHead.appendChild(headerRow);
     });
 }
 
+/* ============================= */
+/* SORTING */
+/* ============================= */
+
 function sortRows() {
   if (sortColumn === null) return;
 
   rows.sort((a, b) => {
-    let valA = a[sortColumn];
-    let valB = b[sortColumn];
 
-    // Convert numeric values properly
-    const cleanA = valA ? valA.toString().replace(/,/g, "") : "";
-    const cleanB = valB ? valB.toString().replace(/,/g, "") : "";
-    
+    const cleanA = a[sortColumn]?.toString().replace(/,/g,"") || "";
+    const cleanB = b[sortColumn]?.toString().replace(/,/g,"") || "";
+
     const numA = parseFloat(cleanA);
     const numB = parseFloat(cleanB);
 
@@ -229,29 +151,25 @@ function sortRows() {
       return sortAsc ? numA - numB : numB - numA;
     }
 
-    // Otherwise string compare
-    valA = valA ? valA.toString().toLowerCase() : "";
-    valB = valB ? valB.toString().toLowerCase() : "";
+    const valA = cleanA.toLowerCase();
+    const valB = cleanB.toLowerCase();
 
     if (valA < valB) return sortAsc ? -1 : 1;
     if (valA > valB) return sortAsc ? 1 : -1;
     return 0;
   });
 }
-   
+
+/* ============================= */
+/* FETCH DATA */
+/* ============================= */
+
 fetch(API_URL + "?endpoint=forwebsite")
   .then(r => r.json())
   .then(data => {
     headers = data.headers;
     rows = data.rows;
-    render();
+    applyFilters(); // render with filters active
   })
-  .catch(err => {
-    console.error("FETCH FAILED:", err);
-  });
-
-search.addEventListener('input', e => render(e.target.value));
+  .catch(err => console.error("FETCH FAILED:", err));
 </script>
-
-</body>
-</html>
