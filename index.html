@@ -107,7 +107,23 @@ let sortAsc = true;
 const tableHead = document.querySelector("#dataTable thead");
 const tableBody = document.querySelector("#dataTable tbody");
 
-function render(filter = "") {
+const allegianceIndex = headers.indexOf("Header Allegiance");
+
+const checkboxes = document.querySelectorAll("#filters input");
+
+checkboxes.forEach(cb => {
+  cb.addEventListener("change", applyFilters);
+});
+
+function applyFilters() {
+  const selected = Array.from(checkboxes)
+    .filter(cb => cb.checked)
+    .map(cb => cb.value);
+
+  renderTable(selected);
+}
+   
+function renderTable(selectedAllegiances = ["Player", "Enemy", "Ally"]) {
   const f = filter.toLowerCase();
 
   tableHead.innerHTML = "";
@@ -142,6 +158,10 @@ tableHead.appendChild(headerRow);
   const mugIndex = headers.indexOf("Mug");
   const moveTypeIndex = headers.indexOf("Move Type");
 
+if (!selectedAllegiances.includes(row[allegianceIndex])) {
+  return;
+}
+   
   rows
     .filter(r =>
       !filter ||
