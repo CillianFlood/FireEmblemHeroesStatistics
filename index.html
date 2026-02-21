@@ -71,6 +71,12 @@ img.mug {
     <h1>Choose Your Legends Data</h1>
   </header>
 
+  <div id="filters">
+  <label><input type="checkbox" value="Player" checked> Player</label>
+  <label><input type="checkbox" value="Enemy" checked> Enemy</label>
+  <label><input type="checkbox" value="Ally" checked> Ally</label>
+  </div>
+  
   <main>
     <div class="toolbar">
       <input id="search" placeholder="Search…" />
@@ -114,12 +120,14 @@ function render(filter = "") {
   th.textContent = h;
   th.style.cursor = "pointer";
 
-  th.addEventListener("click", () => {
-    if (sortColumn === index) {
-      sortAsc = !sortAsc;
-    } else {
-      sortColumn = index;
-      sortAsc = true;
+   if (headers[i] !== "Allegiance") {
+      th.addEventListener("click", () => {
+      if (sortColumn === index) {
+        sortAsc = !sortAsc;
+      } else {
+        sortColumn = index;
+        sortAsc = true;
+      }
     }
 
     sortRows();
