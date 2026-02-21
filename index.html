@@ -177,8 +177,11 @@ function sortRows() {
     let valB = b[sortColumn];
 
     // Convert numeric values properly
-    const numA = parseFloat(valA);
-    const numB = parseFloat(valB);
+    const cleanA = valA ? valA.toString().replace(/,/g, "") : "";
+    const cleanB = valB ? valB.toString().replace(/,/g, "") : "";
+    
+    const numA = parseFloat(cleanA);
+    const numB = parseFloat(cleanB);
 
     if (!isNaN(numA) && !isNaN(numB)) {
       return sortAsc ? numA - numB : numB - numA;
