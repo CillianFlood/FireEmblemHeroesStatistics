@@ -128,7 +128,7 @@ function render(filter = "") {
 
   headerRow.appendChild(th);
 });
-
+tableHead.appendChild(headerRow);
   // Find useful column indexes
   const characterIndex = headers.indexOf("Character");
   const mugIndex = headers.indexOf("Mug");
