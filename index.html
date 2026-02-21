@@ -137,7 +137,13 @@ function render(filter = "") {
           img.className = "mug";
           td.appendChild(img);
         } else {
-          td.textContent = cell ?? "";
+          if (!isNaN(cell) && cell !== "") {
+            td.textContent = Number(cell).toLocaleString(undefined, {
+              maximumFractionDigits: 2
+            });
+          } else {
+            td.textContent = cell;
+}
         }
 
         tr.appendChild(td);
