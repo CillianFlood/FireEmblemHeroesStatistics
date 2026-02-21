@@ -25,12 +25,41 @@
       flex: 1; padding: .6rem .7rem; border-radius: 10px; border: 1px solid #2a2f7a;
       background: var(--panel); color: var(--text);
     }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .75rem; }
-    .card {
-      background: radial-gradient(120% 120% at 0% 0%, #1b2050, var(--panel));
-      border: 1px solid #2a2f7a; border-radius: 14px; padding: .8rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    }
+    table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel);
+  font-size: 14px;
+}
+
+thead {
+  background: #1b2050;
+  position: sticky;
+  top: 0;
+}
+
+th, td {
+  border: 1px solid #2a2f7a;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+th {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+td:first-child,
+th:first-child {
+  text-align: left;
+}
+
+img.mug {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+}
     .name { font-weight: 700; margin-bottom: .25rem; }
     .meta { color: var(--muted); font-size: .85rem; }
     footer { opacity: .7; text-align: center; padding: 1.5rem 0; }
@@ -46,7 +75,12 @@
     <div class="toolbar">
       <input id="search" placeholder="Search…" />
     </div>
-    <div id="grid" class="grid"></div>
+    <div style="overflow-x:auto;">
+      <table id="dataTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
   </main>
 
   <footer>
@@ -56,34 +90,62 @@
  <script>
 const API_URL = "https://script.google.com/macros/s/AKfycby2SIa1xkldeimH7OrkltvK9BoPE07PELtGEriB5gPZ8GSzu42ErrvZo3M73S5k8aBycg/exec";
 
-
-const grid = document.getElementById('grid');
 const search = document.getElementById('search');
 
 let headers = [];
 let rows = [];
 
+const tableHead = document.querySelector("#dataTable thead");
+const tableBody = document.querySelector("#dataTable tbody");
+
 function render(filter = "") {
-  grid.innerHTML = "";
   const f = filter.toLowerCase();
 
+  tableHead.innerHTML = "";
+  tableBody.innerHTML = "";
+
+  // Build header row
+  const headerRow = document.createElement("tr");
+  headers.forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    headerRow.appendChild(th);
+  });
+  tableHead.appendChild(headerRow);
+
+  // Find useful column indexes
+  const characterIndex = headers.indexOf("Character");
+  const mugIndex = headers.indexOf("Mug");
+
   rows
-    .filter(r => r[1] && r[1].toString().toLowerCase().includes(f))
+    .filter(r =>
+      !filter ||
+      (characterIndex !== -1 &&
+        r[characterIndex] &&
+        r[characterIndex].toString().toLowerCase().includes(f))
+    )
     .forEach(r => {
-      const card = document.createElement('div');
-      card.className = 'card';
+      const tr = document.createElement("tr");
 
-      card.innerHTML = `
-        <div class="name">${r[1]}</div>
-        <pre style="white-space: pre-wrap; font-size: 12px;">
-${JSON.stringify(r, null, 2)}
-        </pre>
-      `;
+      r.forEach((cell, i) => {
+        const td = document.createElement("td");
 
-      grid.appendChild(card);
+        // If this is the Mug column, render as image
+        if (i === mugIndex && cell) {
+          const img = document.createElement("img");
+          img.src = cell;
+          img.className = "mug";
+          td.appendChild(img);
+        } else {
+          td.textContent = cell ?? "";
+        }
+
+        tr.appendChild(td);
+      });
+
+      tableBody.appendChild(tr);
     });
 }
-
 
 fetch(API_URL + "?endpoint=forwebsite")
   .then(r => r.json())
