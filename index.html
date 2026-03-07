@@ -31,36 +31,30 @@
       background: var(--panel);
       font-size: 14px;
     }
-
     thead {
       background: #1b2050;
       position: sticky;
       top: 0;
     }
-
     th, td {
       border: 1px solid #2a2f7a;
       padding: 6px 8px;
       text-align: center;
     }
-
     th {
       font-weight: 700;
       color: var(--accent);
     }
-
     td:first-child,
     th:first-child {
       text-align: left;
     }
-
     img.mug {
       width: 50px;
       height: 50px;
       object-fit: cover;
       border-radius: 6px;
     }
-
     .name { font-weight: 700; margin-bottom: .25rem; }
     .meta { color: var(--muted); font-size: .85rem; }
     footer { opacity: .7; text-align: center; padding: 1.5rem 0; }
@@ -76,11 +70,9 @@
       color: var(--accent);
       font-size: 2rem;
     }
-
     #loading::after {
       content: '⏳ Loading...';
     }
-
   </style>
 </head>
 <body>
@@ -110,121 +102,102 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycby2SIa1xkldeimH7OrkltvK9BoPE07PELtGEriB5gPZ8GSzu42ErrvZo3M73S5k8aBycg/exec";
     const search = document.getElementById('search');
-    const loading = document.getElementById('loading');  // The loading spinner
+    const loading = document.getElementById('loading'); 
 
     let headers = [];
     let rows = [];
+    let bgColors = [];
     let sortColumn = null;
     let sortAsc = true;
 
     const tableHead = document.querySelector("#dataTable thead");
     const tableBody = document.querySelector("#dataTable tbody");
 
-    // Hide the search bar and show the loading spinner when data is being fetched
     function showLoading() {
-      search.style.display = 'none'; // Hide the search bar
-      loading.style.display = 'block';  // Show the loading spinner
+      search.style.display = 'none'; 
+      loading.style.display = 'block';  
     }
 
-    // Show the search bar and hide the loading spinner after data is fetched
     function hideLoading() {
-      search.style.display = 'block'; // Show the search bar
-      loading.style.display = 'none';  // Hide the loading spinner
+      search.style.display = 'block'; 
+      loading.style.display = 'none';  
     }
 
-   function render(filter = "") {
-  const f = filter.toLowerCase();
-  tableHead.innerHTML = "";
-  tableBody.innerHTML = "";
+    function render(filter = "") {
+      const f = filter.toLowerCase();
+      tableHead.innerHTML = "";
+      tableBody.innerHTML = "";
 
-  if (!headers.length || !rows.length) {
-    console.error("No data to render.");
-    return;
-  }
+      if (!headers.length || !rows.length) return;
 
-  const mugIndex = headers.indexOf("Mug");
-  const moveTypeIndex = headers.indexOf("Move Type");
+      const mugIndex = headers.indexOf("Mug");
+      const moveTypeIndex = headers.indexOf("Move Type");
+      const characterIndex = headers.indexOf("Character");
 
-  // Build header
-  const headerRow = document.createElement("tr");
-  headers.forEach((h, index) => {
-    const th = document.createElement("th");
+      // Build header
+      const headerRow = document.createElement("tr");
+      headers.forEach((h, index) => {
+        const th = document.createElement("th");
+        let arrow = "";
+        if (sortColumn === index) arrow = sortAsc ? " ▲" : " ▼";
+        th.textContent = h + arrow;
 
-    let arrow = "";
-    if (sortColumn === index) {
-      arrow = sortAsc ? " ▲" : " ▼";
-    }
-    th.textContent = h + arrow;
-
-    // Sorting logic
-    if (index === mugIndex) {
-      th.style.cursor = "default"; // no sort
-      th.onclick = e => e.preventDefault();
-    } else {
-      th.style.cursor = "pointer";
-      th.onclick = () => {
-        if (sortColumn === index) {
-          sortAsc = !sortAsc;
+        if (index === mugIndex) {
+          th.style.cursor = "default"; 
+          th.onclick = e => e.preventDefault();
         } else {
-          sortColumn = index;
-          sortAsc = false;
+          th.style.cursor = "pointer";
+          th.onclick = () => {
+            if (sortColumn === index) sortAsc = !sortAsc;
+            else { sortColumn = index; sortAsc = false; }
+            sortRows();
+            render(search.value);
+          };
         }
-        sortRows();
-        render(search.value);
-      };
+        headerRow.appendChild(th);
+      });
+      tableHead.appendChild(headerRow);
+
+      // Map rows to include original index
+      const rowsWithIndex = rows.map((r, idx) => ({ row: r, idx }));
+      const rowsToRender = rowsWithIndex.filter(obj => {
+        const r = obj.row;
+        return !filter || (characterIndex !== -1 && r[characterIndex]?.toString().toLowerCase().includes(f));
+      });
+
+      // Render rows
+      rowsToRender.forEach(({ row: r, idx }) => {
+        const tr = document.createElement("tr");
+        r.forEach((cell, i) => {
+          const td = document.createElement("td");
+
+          if (bgColors && bgColors[idx] && bgColors[idx][i]) {
+            td.style.backgroundColor = bgColors[idx][i];
+          }
+
+          if (i === mugIndex && cell) {
+            const img = document.createElement("img");
+            img.src = cell;
+            img.className = "mug";
+            td.appendChild(img);
+          } else if (i === moveTypeIndex && cell) {
+            const img = document.createElement("img");
+            img.src = cell;
+            img.className = "moveType";
+            td.appendChild(img);
+          } else {
+            if (!isNaN(cell) && cell !== "") {
+              td.textContent = Number(cell).toLocaleString(undefined, { maximumFractionDigits: 2 });
+            } else {
+              td.textContent = cell;
+            }
+          }
+
+          tr.appendChild(td);
+        });
+        tableBody.appendChild(tr);
+      });
     }
-
-    headerRow.appendChild(th);
-  });
-  tableHead.appendChild(headerRow);
-
-  // Filter rows
-  const characterIndex = headers.indexOf("Character");
-  const rowsToRender = rows.filter(r => {
-    return !filter || (characterIndex !== -1 && r[characterIndex]?.toString().toLowerCase().includes(f));
-  });
-
-  // Render rows
-  rowsToRender.forEach((r, rowIndex) => {
-    const tr = document.createElement("tr");
-
-    r.forEach((cell, i) => {
-      const td = document.createElement("td");
-
-      // Apply background color from Google Sheet
-      if (bgColors && bgColors[rowIndex] && bgColors[rowIndex][i]) {
-        td.style.backgroundColor = bgColors[rowIndex][i];
-      }
-
-      // Mug image
-      if (i === mugIndex && cell) {
-        const img = document.createElement("img");
-        img.src = cell;
-        img.className = "mug";
-        td.appendChild(img);
-
-      // Move Type image
-      } else if (i === moveTypeIndex && cell) {
-        const img = document.createElement("img");
-        img.src = cell;
-        img.className = "moveType";
-        td.appendChild(img);
-
-      // Numeric formatting
-      } else {
-        if (!isNaN(cell) && cell !== "") {
-          td.textContent = Number(cell).toLocaleString(undefined, { maximumFractionDigits: 2 });
-        } else {
-          td.textContent = cell;
-        }
-      }
-
-      tr.appendChild(td);
-    });
-
-    tableBody.appendChild(tr);
-  });
-}
 
     function sortRows() {
       if (sortColumn === null) return;
@@ -239,9 +212,7 @@
         const numA = parseFloat(cleanA);
         const numB = parseFloat(cleanB);
 
-        if (!isNaN(numA) && !isNaN(numB)) {
-          return sortAsc ? numA - numB : numB - numA;
-        }
+        if (!isNaN(numA) && !isNaN(numB)) return sortAsc ? numA - numB : numB - numA;
 
         valA = valA ? valA.toString().toLowerCase() : "";
         valB = valB ? valB.toString().toLowerCase() : "";
@@ -252,7 +223,6 @@
       });
     }
 
-    // Show loading spinner and hide search bar
     showLoading();
 
     fetch(API_URL + "?endpoint=forwebsite")
@@ -260,12 +230,13 @@
       .then(data => {
         headers = data.headers;
         rows = data.rows;
+        bgColors = data.bgColors;
         render();
-        hideLoading();  // Show search bar and hide loading spinner
+        hideLoading();
       })
       .catch(err => {
         console.error("FETCH FAILED:", err);
-        hideLoading();  // In case of error, still hide loading spinner
+        hideLoading();
       });
 
     search.addEventListener('input', e => render(e.target.value));
