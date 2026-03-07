@@ -107,6 +107,9 @@ function render(filter = "") {
   tableHead.innerHTML = "";
   tableBody.innerHTML = "";
 
+  // Find the index of the "Mug" column
+  const mugIndex = headers.indexOf("Mug");
+
   // Build header row
   const headerRow = document.createElement("tr");
   headers.forEach((h, index) => {
@@ -120,17 +123,23 @@ function render(filter = "") {
     th.textContent = h + arrow;
     th.style.cursor = "pointer";
 
-    th.onclick = () => {
-      if (sortColumn === index) {
-        sortAsc = !sortAsc;
-      } else {
-        sortColumn = index;
-        sortAsc = false; // first click = descending
-      }
+    // Disable sorting for the "Mug" column
+    if (index === mugIndex) {
+      th.style.cursor = "default";  // Change cursor to indicate it's non-clickable
+      th.onclick = (e) => e.preventDefault();  // Prevent the sorting from happening
+    } else {
+      th.onclick = () => {
+        if (sortColumn === index) {
+          sortAsc = !sortAsc;
+        } else {
+          sortColumn = index;
+          sortAsc = false; // first click = descending
+        }
 
-      sortRows();
-      render(search.value);
-    };
+        sortRows();
+        render(search.value);
+      };
+    }
 
     headerRow.appendChild(th);
   });
@@ -141,41 +150,30 @@ function render(filter = "") {
   const mugIndex = headers.indexOf("Mug");
   const moveTypeIndex = headers.indexOf("Move Type");
 
-  rows
-    .filter(r =>
-      !filter ||
-      (characterIndex !== -1 &&
-        r[characterIndex] &&
-        r[characterIndex].toString().toLowerCase().includes(f))
-    )
-    .filter(r => {
-      // Exclude rows where the sorted column has empty or null values
-      return r[sortColumn] !== null && r[sortColumn] !== "" && r[sortColumn] !== undefined;
-    })
-    .forEach(r => {
-      const tr = document.createElement("tr");
+  const rowsToRender = rows.filter(r => {
+    return !filter || (characterIndex !== -1 && r[characterIndex] && r[characterIndex].toString().toLowerCase().includes(f));
+  });
 
+  // If no column has been sorted yet, show all rows (even with null values)
+  if (sortColumn === null) {
+    rowsToRender.forEach(r => {
+      const tr = document.createElement("tr");
       r.forEach((cell, i) => {
         const td = document.createElement("td");
 
-        // If this is the Mug column, render as image
         if (i === mugIndex && cell) {
           const img = document.createElement("img");
           img.src = cell;
           img.className = "mug";
           td.appendChild(img);
-        } 
-        else if (i === moveTypeIndex && cell) {
+        } else if (i === moveTypeIndex && cell) {
           const img = document.createElement("img");
           img.src = cell;
           img.className = "moveType";
           td.appendChild(img);
-        } 
-        else {
+        } else {
           if (!isNaN(cell) && cell !== "") {
-            td.textContent = Number(cell).toLocaleString(undefined, {
-              maximumFractionDigits: 2
-            });
+            td.textContent = Number(cell).toLocaleString(undefined, { maximumFractionDigits: 2 });
           } else {
             td.textContent = cell;
           }
@@ -186,6 +184,38 @@ function render(filter = "") {
 
       tableBody.appendChild(tr);
     });
+  } else {
+    // If sorting by a column, exclude rows with null/empty values in that column
+    rowsToRender.filter(r => r[sortColumn] !== null && r[sortColumn] !== "" && r[sortColumn] !== undefined)
+      .forEach(r => {
+        const tr = document.createElement("tr");
+        r.forEach((cell, i) => {
+          const td = document.createElement("td");
+
+          if (i === mugIndex && cell) {
+            const img = document.createElement("img");
+            img.src = cell;
+            img.className = "mug";
+            td.appendChild(img);
+          } else if (i === moveTypeIndex && cell) {
+            const img = document.createElement("img");
+            img.src = cell;
+            img.className = "moveType";
+            td.appendChild(img);
+          } else {
+            if (!isNaN(cell) && cell !== "") {
+              td.textContent = Number(cell).toLocaleString(undefined, { maximumFractionDigits: 2 });
+            } else {
+              td.textContent = cell;
+            }
+          }
+
+          tr.appendChild(td);
+        });
+
+        tableBody.appendChild(tr);
+      });
+  }
 }
 
 function sortRows() {
