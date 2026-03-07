@@ -109,35 +109,32 @@ function render(filter = "") {
 
   // Build header row
   const headerRow = document.createElement("tr");
+  headers.forEach((h, index) => {
+    const th = document.createElement("th");
 
-headers.forEach((h, index) => {
-  const th = document.createElement("th");
-
-  let arrow = "";
-  if (sortColumn === index) {
-    arrow = sortAsc ? " ▲" : " ▼";
-  }
-
-  th.textContent = h + arrow;
-  th.style.cursor = "pointer";
-
-  th.onclick = () => {
+    let arrow = "";
     if (sortColumn === index) {
-      sortAsc = !sortAsc;
-    } else {
-      sortColumn = index;
-      sortAsc = false;
+      arrow = sortAsc ? " ▲" : " ▼";
     }
 
-    sortRows();
-    render(search.value);
-  };
+    th.textContent = h + arrow;
+    th.style.cursor = "pointer";
 
-  headerRow.appendChild(th);
-});
+    th.onclick = () => {
+      if (sortColumn === index) {
+        sortAsc = !sortAsc;
+      } else {
+        sortColumn = index;
+        sortAsc = false; // first click = descending
+      }
 
-tableHead.appendChild(headerRow);
+      sortRows();
+      render(search.value);
+    };
 
+    headerRow.appendChild(th);
+  });
+  tableHead.appendChild(headerRow);
 
   // Find useful column indexes
   const characterIndex = headers.indexOf("Character");
@@ -151,6 +148,10 @@ tableHead.appendChild(headerRow);
         r[characterIndex] &&
         r[characterIndex].toString().toLowerCase().includes(f))
     )
+    .filter(r => {
+      // Exclude rows where the sorted column has empty or null values
+      return r[sortColumn] !== null && r[sortColumn] !== "" && r[sortColumn] !== undefined;
+    })
     .forEach(r => {
       const tr = document.createElement("tr");
 
@@ -177,7 +178,7 @@ tableHead.appendChild(headerRow);
             });
           } else {
             td.textContent = cell;
-}
+          }
         }
 
         tr.appendChild(td);
@@ -190,14 +191,14 @@ tableHead.appendChild(headerRow);
 function sortRows() {
   if (sortColumn === null) return;
 
+  // Sort the rows normally (without filtering empty values)
   rows.sort((a, b) => {
     let valA = a[sortColumn];
     let valB = b[sortColumn];
 
-    // Convert numeric values properly
     const cleanA = valA ? valA.toString().replace(/,/g, "") : "";
     const cleanB = valB ? valB.toString().replace(/,/g, "") : "";
-    
+
     const numA = parseFloat(cleanA);
     const numB = parseFloat(cleanB);
 
@@ -205,7 +206,6 @@ function sortRows() {
       return sortAsc ? numA - numB : numB - numA;
     }
 
-    // Otherwise string compare
     valA = valA ? valA.toString().toLowerCase() : "";
     valB = valB ? valB.toString().toLowerCase() : "";
 
