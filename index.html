@@ -132,124 +132,99 @@
       loading.style.display = 'none';  // Hide the loading spinner
     }
 
-    function render(filter = "") {
-      const f = filter.toLowerCase();
-      tableHead.innerHTML = "";
-      tableBody.innerHTML = "";
+   function render(filter = "") {
+  const f = filter.toLowerCase();
+  tableHead.innerHTML = "";
+  tableBody.innerHTML = "";
 
-      // Check if data exists before proceeding
-      if (!headers.length || !rows.length) {
-        console.error("No data to render.");
-        return;
-      }
+  if (!headers.length || !rows.length) {
+    console.error("No data to render.");
+    return;
+  }
 
-      // Find the index of the "Mug" column
-      const mugIndex = headers.indexOf("Mug");
+  const mugIndex = headers.indexOf("Mug");
+  const moveTypeIndex = headers.indexOf("Move Type");
 
-      // Build header row
-      const headerRow = document.createElement("tr");
-      headers.forEach((h, index) => {
-        const th = document.createElement("th");
+  // Build header
+  const headerRow = document.createElement("tr");
+  headers.forEach((h, index) => {
+    const th = document.createElement("th");
 
-        let arrow = "";
-        if (sortColumn === index) {
-          arrow = sortAsc ? " ▲" : " ▼";
-        }
-
-        th.textContent = h + arrow;
-        th.style.cursor = "pointer";
-
-        // Disable sorting for the "Mug" column
-        if (index === mugIndex) {
-          th.style.cursor = "default";
-          th.onclick = (e) => e.preventDefault();
-        } else {
-          th.onclick = () => {
-            if (sortColumn === index) {
-              sortAsc = !sortAsc;
-            } else {
-              sortColumn = index;
-              sortAsc = false; // first click = descending
-            }
-
-            sortRows();
-            render(search.value);
-          };
-        }
-
-        headerRow.appendChild(th);
-      });
-      tableHead.appendChild(headerRow);
-
-      // Find useful column indexes
-      const characterIndex = headers.indexOf("Character");
-      const moveTypeIndex = headers.indexOf("Move Type");
-
-      const rowsToRender = rows.filter(r => {
-        return !filter || (characterIndex !== -1 && r[characterIndex] && r[characterIndex].toString().toLowerCase().includes(f));
-      });
-
-      if (sortColumn === null) {
-        rowsToRender.forEach(r => {
-          const tr = document.createElement("tr");
-          r.forEach((cell, i) => {
-            const td = document.createElement("td");
-
-            if (i === mugIndex && cell) {
-              const img = document.createElement("img");
-              img.src = cell;
-              img.className = "mug";
-              td.appendChild(img);
-            } else if (i === moveTypeIndex && cell) {
-              const img = document.createElement("img");
-              img.src = cell;
-              img.className = "moveType";
-              td.appendChild(img);
-            } else {
-              if (!isNaN(cell) && cell !== "") {
-                td.textContent = Number(cell).toLocaleString(undefined, { maximumFractionDigits: 2 });
-              } else {
-                td.textContent = cell;
-              }
-            }
-
-            tr.appendChild(td);
-          });
-
-          tableBody.appendChild(tr);
-        });
-      } else {
-        rowsToRender.filter(r => r[sortColumn] !== null && r[sortColumn] !== "" && r[sortColumn] !== undefined)
-          .forEach(r => {
-            const tr = document.createElement("tr");
-            r.forEach((cell, i) => {
-              const td = document.createElement("td");
-
-              if (i === mugIndex && cell) {
-                const img = document.createElement("img");
-                img.src = cell;
-                img.className = "mug";
-                td.appendChild(img);
-              } else if (i === moveTypeIndex && cell) {
-                const img = document.createElement("img");
-                img.src = cell;
-                img.className = "moveType";
-                td.appendChild(img);
-              } else {
-                if (!isNaN(cell) && cell !== "") {
-                  td.textContent = Number(cell).toLocaleString(undefined, { maximumFractionDigits: 2 });
-                } else {
-                  td.textContent = cell;
-                }
-              }
-
-              tr.appendChild(td);
-            });
-
-            tableBody.appendChild(tr);
-          });
-      }
+    let arrow = "";
+    if (sortColumn === index) {
+      arrow = sortAsc ? " ▲" : " ▼";
     }
+    th.textContent = h + arrow;
+
+    // Sorting logic
+    if (index === mugIndex) {
+      th.style.cursor = "default"; // no sort
+      th.onclick = e => e.preventDefault();
+    } else {
+      th.style.cursor = "pointer";
+      th.onclick = () => {
+        if (sortColumn === index) {
+          sortAsc = !sortAsc;
+        } else {
+          sortColumn = index;
+          sortAsc = false;
+        }
+        sortRows();
+        render(search.value);
+      };
+    }
+
+    headerRow.appendChild(th);
+  });
+  tableHead.appendChild(headerRow);
+
+  // Filter rows
+  const characterIndex = headers.indexOf("Character");
+  const rowsToRender = rows.filter(r => {
+    return !filter || (characterIndex !== -1 && r[characterIndex]?.toString().toLowerCase().includes(f));
+  });
+
+  // Render rows
+  rowsToRender.forEach((r, rowIndex) => {
+    const tr = document.createElement("tr");
+
+    r.forEach((cell, i) => {
+      const td = document.createElement("td");
+
+      // Apply background color from Google Sheet
+      if (bgColors && bgColors[rowIndex] && bgColors[rowIndex][i]) {
+        td.style.backgroundColor = bgColors[rowIndex][i];
+      }
+
+      // Mug image
+      if (i === mugIndex && cell) {
+        const img = document.createElement("img");
+        img.src = cell;
+        img.className = "mug";
+        td.appendChild(img);
+
+      // Move Type image
+      } else if (i === moveTypeIndex && cell) {
+        const img = document.createElement("img");
+        img.src = cell;
+        img.className = "moveType";
+        td.appendChild(img);
+
+      // Numeric formatting
+      } else {
+        if (!isNaN(cell) && cell !== "") {
+          td.textContent = Number(cell).toLocaleString(undefined, { maximumFractionDigits: 2 });
+        } else {
+          td.textContent = cell;
+        }
+      }
+
+      tr.appendChild(td);
+    });
+
+    tableBody.appendChild(tr);
+  });
+}
 
     function sortRows() {
       if (sortColumn === null) return;
