@@ -178,7 +178,7 @@ Hosted free on GitHub Pages · Data from Google Sheets
 const API_URL="https://script.google.com/macros/s/AKfycby2SIa1xkldeimH7OrkltvK9BoPE07PELtGEriB5gPZ8GSzu42ErrvZo3M73S5k8aBycg/exec";
 
 const CACHE_KEY = "sheets_cache";
-const CACHE_DURATION = 60 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 60 * 60 * 1000; // 60 minutes
   
 const search=document.getElementById("search");
 const loading=document.getElementById("loading");
@@ -343,8 +343,6 @@ tableBody.innerHTML=html;
 
 }
 
-showLoading();
-
 const cached = localStorage.getItem(CACHE_KEY);
 
 if (cached) {
@@ -355,6 +353,10 @@ if (cached) {
 
     headers = cacheObj.headers;
     data = cacheObj.data;
+
+    hiddenColumns = headers
+      .map((h,i) => (!h || h.trim()==="") ? i : -1)
+      .filter(i => i !== -1);
 
     render();
     hideLoading();
