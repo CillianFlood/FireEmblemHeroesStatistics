@@ -323,7 +323,7 @@ function render(filter=""){
   render(search.value);
 };
     }
-    th.textContent = h + arrow;
+    th.innerHTML = `<div class="thLabel">${h}</div><div class="thArrow">${arrow}</div>`;
     headerRow.appendChild(th);
   });
   tableHead.appendChild(headerRow);
