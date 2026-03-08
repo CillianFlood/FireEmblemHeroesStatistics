@@ -185,7 +185,7 @@ const tableBody=document.querySelector("#dataTable tbody");
 
 let headers=[];
 let data=[];
-
+let hiddenColumns = [];
 let sortColumn=null;
 let sortAsc=true;
 
@@ -244,6 +244,8 @@ const headerRow=document.createElement("tr");
 
 headers.forEach((h,i)=>{
 
+if(hiddenColumns.includes(i)) return;
+  
 const th=document.createElement("th");
 
   
@@ -300,6 +302,8 @@ html+="<tr>";
 
 r.forEach((cell,i)=>{
 
+if(hiddenColumns.includes(i)) return;
+  
 let style="";
 if(colors&&colors[i])style=` style="background:${colors[i]}"`;
 
@@ -342,11 +346,15 @@ fetch(API_URL+"?endpoint=forwebsite")
 .then(r=>r.json())
 .then(dataAPI=>{
 
-headers=dataAPI.headers;
+headers = dataAPI.headers;
 
-data=dataAPI.rows.map((row,i)=>({
-row:row,
-colors:dataAPI.bgColors?dataAPI.bgColors[i]:[]
+hiddenColumns = headers
+  .map((h,i) => (!h || h.trim()==="") ? i : -1)
+  .filter(i => i !== -1);
+
+data = dataAPI.rows.map((row,i)=>({
+  row: row,
+  colors: dataAPI.bgColors ? dataAPI.bgColors[i] : []
 }));
 
 render();
