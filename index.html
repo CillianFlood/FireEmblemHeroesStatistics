@@ -246,11 +246,20 @@ headers.forEach((h,i)=>{
 
 const th=document.createElement("th");
 
-let arrow="";
-if(sortColumn===i)arrow=sortAsc?" ▲":" ▼";
+  
+let arrow;
 
-th.textContent=h+arrow;
+if (i === mugIndex) {
+  arrow = ""; // mug column not sortable
+} else if (sortColumn === i) {
+  arrow = sortAsc ? " ▲" : " ▼";
+} else {
+  arrow = " ▲▼";
+}
 
+th.textContent = h + arrow;
+
+  
 if(i!==mugIndex){
 
 th.onclick=()=>{
