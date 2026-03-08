@@ -177,6 +177,9 @@ Hosted free on GitHub Pages · Data from Google Sheets
 
 const API_URL="https://script.google.com/macros/s/AKfycby2SIa1xkldeimH7OrkltvK9BoPE07PELtGEriB5gPZ8GSzu42ErrvZo3M73S5k8aBycg/exec";
 
+const CACHE_KEY = "sheets_cache";
+const CACHE_DURATION = 60 * 60 * 1000; // 5 minutes
+  
 const search=document.getElementById("search");
 const loading=document.getElementById("loading");
 
@@ -342,9 +345,55 @@ tableBody.innerHTML=html;
 
 showLoading();
 
-fetch(API_URL+"?endpoint=forwebsite")
-.then(r=>r.json())
-.then(dataAPI=>{
+const cached = localStorage.getItem(CACHE_KEY);
+
+if (cached) {
+
+  const cacheObj = JSON.parse(cached);
+
+  if (Date.now() - cacheObj.time < CACHE_DURATION) {
+
+    headers = cacheObj.headers;
+    data = cacheObj.data;
+
+    render();
+    hideLoading();
+    return;
+
+  }
+
+}
+
+fetch(API_URL + "?endpoint=forwebsite")
+.then(r => r.json())
+.then(dataAPI => {
+
+  headers = dataAPI.headers;
+
+  hiddenColumns = headers
+    .map((h,i) => (!h || h.trim()==="") ? i : -1)
+    .filter(i => i !== -1);
+
+  data = dataAPI.rows.map((row,i)=>({
+    row: row,
+    colors: dataAPI.bgColors ? dataAPI.bgColors[i] : []
+  }));
+
+  render();
+
+  localStorage.setItem(CACHE_KEY, JSON.stringify({
+    time: Date.now(),
+    headers: headers,
+    data: data
+  }));
+
+  hideLoading();
+
+})
+.catch(err=>{
+  console.error("FETCH FAILED:",err);
+  hideLoading();
+});
 
 headers = dataAPI.headers;
 
