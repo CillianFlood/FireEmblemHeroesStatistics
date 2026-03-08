@@ -191,7 +191,9 @@ display:none;
 <div class="toolbar">
 <input id="search" placeholder="Search…">
 </div>
-
+  
+<div id="count"></div>
+  
 <div style="overflow-x:auto;">
 <table id="dataTable">
 <thead></thead>
@@ -248,7 +250,11 @@ function loadDataset(name){
   hiddenColumns = headers
    .map((h,i)=> (!h || h.trim()==="") ? i : -1)
    .filter(i => i !== -1);
-  data = dataset.rows.map((row,i)=>({ row, colors: dataset.bgColors ? dataset.bgColors[i] : [] }));
+  data = dataset.rows.map((row,i)=>({
+    row,
+    colors: dataset.bgColors ? dataset.bgColors[i] : [],
+    originalIndex: i
+  }));
   sortColumn=null;
   render(search.value);
   setActiveButton(name);
@@ -282,17 +288,43 @@ function render(filter=""){
   const moveTypeIndex = headers.indexOf("Move Type");
 
   const headerRow = document.createElement("tr");
+
+  document.getElementById("count").textContent =
+  rowsToRender.length + " rows";
+  
   headers.forEach((h,i)=>{
     if(hiddenColumns.includes(i)) return;
     const th = document.createElement("th");
     let arrow = "";
     if(i!==mugIndex){
-      arrow = sortColumn===i?(sortAsc?" ▲":" ▼"):" ▲▼";
-      th.onclick = () => {
-        if(sortColumn===i) sortAsc=!sortAsc;
-        else {sortColumn=i; sortAsc=false;}
-        sortData(); render(search.value);
+      if(sortColumn===i){
+          arrow = sortAsc ? " ▲" : " ▼";
+      }else{
+        arrow = "▲▼";
       }
+     th.onclick = () => {
+
+  if(sortColumn !== i){
+    // First click → descending
+    sortColumn = i;
+    sortAsc = false;
+
+  } else if(!sortAsc){
+    // Second click → ascending
+    sortAsc = true;
+
+  } else {
+    // Third click → reset sort
+    sortColumn = null;
+
+    data.sort((a,b)=>a.originalIndex - b.originalIndex);
+    render(search.value);
+    return;
+  }
+
+  sortData();
+  render(search.value);
+};
     }
     th.textContent = h + arrow;
     headerRow.appendChild(th);
@@ -300,10 +332,19 @@ function render(filter=""){
   tableHead.appendChild(headerRow);
 
   let html="";
-  const rowsToRender = data.filter(obj=>{
-    if(!filter) return true;
-    return obj.row.some(cell=>cell && cell.toString().toLowerCase().includes(f));
-  });
+  
+const rowsToRender = data.filter(obj=>{
+  if(sortColumn !== null){
+    const val = obj.row[sortColumn];
+    if(val === "" || val === null || val === undefined) return false;
+  }
+
+  if(!filter) return true;
+
+  return obj.row.some(cell =>
+    cell && cell.toString().toLowerCase().includes(f)
+  );
+});
 
   rowsToRender.forEach(obj=>{
     const r=obj.row, colors=obj.colors;
