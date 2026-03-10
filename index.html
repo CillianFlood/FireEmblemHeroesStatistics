@@ -251,9 +251,7 @@ function showLoading(){ loading.style.display = "flex"; }
 function hideLoading(){ loading.style.display = "none"; }
 
 // Strip "ForWebsite" prefix for display
-function getButtonName(rangeName){
-  return rangeName.startsWith("ForWebsite") ? rangeName.slice("ForWebsite".length) : rangeName;
-}
+function getButtonName(rangeName){return (rangeName.startsWith("ForWebsite")?rangeName.slice("ForWebsite".length):rangeName).replace(/_/g," ");}
 
 // Highlight the currently active dataset button
 function setActiveButton(name){
